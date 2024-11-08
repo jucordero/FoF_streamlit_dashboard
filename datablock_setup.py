@@ -58,7 +58,47 @@ datablock["food"]["1000 T/year"] = food_uk
 # ----------------
 scale_ones = xr.DataArray(data = np.ones_like(food_uk.Year.values),
                           coords = {"Year":food_uk.Year.values})
-extended_impact = PN18_FAOSTAT["GHG Emissions (IPCC 2013)"].drop_vars(["Item_name", "Item_group", "Item_origin"]) * scale_ones
+
+NDC_emissions = PN18_FAOSTAT["GHG Emissions (IPCC 2013)"]
+
+NDC_emissions.loc[{}] = 0
+
+NDC_emissions.loc[{"Item":2731}] = 16.94 
+NDC_emissions.loc[{"Item":2617}] = 0.13
+NDC_emissions.loc[{"Item":2513}] = 1.06
+NDC_emissions.loc[{"Item":2656}] = 0.21
+NDC_emissions.loc[{"Item":2658}] = 0.54
+NDC_emissions.loc[{"Item":2520}] = 0.00
+NDC_emissions.loc[{"Item":2740}] = 0.00
+NDC_emissions.loc[{"Item":2614}] = 0.10
+NDC_emissions.loc[{"Item":2743}] = 0.27 
+NDC_emissions.loc[{"Item":2625}] = 0.10 
+NDC_emissions.loc[{"Item":2620}] = 0.16
+NDC_emissions.loc[{"Item":2582}] = 1.63
+NDC_emissions.loc[{"Item":2735}] = 2.74
+NDC_emissions.loc[{"Item":2948}] = 0.27
+NDC_emissions.loc[{"Item":2732}] = 11.32
+NDC_emissions.loc[{"Item":2516}] = 1.06
+NDC_emissions.loc[{"Item":2586}] = 1.63
+NDC_emissions.loc[{"Item":2570}] = 1.63
+NDC_emissions.loc[{"Item":2602}] = 0.05
+NDC_emissions.loc[{"Item":2547}] = 1.66
+NDC_emissions.loc[{"Item":2733}] = 0.97
+NDC_emissions.loc[{"Item":2531}] = 0.29
+NDC_emissions.loc[{"Item":2734}] = 0.15
+NDC_emissions.loc[{"Item":2549}] = 0.91
+NDC_emissions.loc[{"Item":2574}] = 1.63
+NDC_emissions.loc[{"Item":2558}] = 1.63
+NDC_emissions.loc[{"Item":2515}] = 1.06
+NDC_emissions.loc[{"Item":2571}] = 2.05
+NDC_emissions.loc[{"Item":2542}] = 0.52
+NDC_emissions.loc[{"Item":2537}] = 0.36
+NDC_emissions.loc[{"Item":2601}] = 0.03
+NDC_emissions.loc[{"Item":2605}] = 0.23
+NDC_emissions.loc[{"Item":2511}] = 0.80
+NDC_emissions.loc[{"Item":2655}] = 0.54
+
+extended_impact = NDC_emissions.drop_vars(["Item_name", "Item_group", "Item_origin"]) * scale_ones
 
 datablock["impact"]["gco2e/gfood"] = extended_impact
 

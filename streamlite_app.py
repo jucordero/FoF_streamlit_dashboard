@@ -192,14 +192,37 @@ with st.sidebar:
         password = st.text_input("Enter the advanced settings password", type="password")
         if password == st.secrets["advanced_options_password"]:
 
-            for label, params in  advs.items():
-                advs[label]["value"] = st.slider(params["label"],
-                                                 min_value=params["min_value"],
-                                                 max_value=params["max_value"],
-                                                 value=params["value"],
-                                                 step=params["step"],
-                                                 key=params["key"])
+            labmeat_co2e = st.slider('Cultured meat GHG emissions [g CO2e / g]', min_value=1., max_value=120., value=25., key='labmeat_slider')
+            rda_kcal = st.slider('Recommended daily energy intake [kCal]', min_value=2000, max_value=2500, value=2250, key='rda_slider')
+            n_scale = st.slider('Adoption timescale [years]', min_value=0, max_value=50, value=20, step=5, key='timescale_slider')
+            max_ghge_animal = st.slider('Maximum animal production GHGE reduction due to innovation [%]', min_value=0, max_value=100, value=30, step=10, key = "max_ghg_animal", help = help["advanced_options"][3])
+            max_ghge_plant = st.slider('Maximum plant production GHGE reduction due to innovation [%]', min_value=0, max_value=100, value=30, step=10, key = "max_ghg_plant", help = help["advanced_options"][4])
+            bdleaf_conif_ratio = st.slider('Ratio of coniferous to broadleaved reforestation', min_value=0, max_value=100, value=50, step=10, key = "bdleaf_conif_ratio", help = help["advanced_options"][5])
+            bdleaf_seq_ha_yr = st.slider('Broadleaved forest CO2 sequestration [t CO2 / ha / year]', min_value=1., max_value=15., value=5., step=0.5, key = "bdleaf_seq_ha_yr", help = help["advanced_options"][6])
+            conif_seq_ha_yr = st.slider('Coniferous forest CO2 sequestration [t CO2 / ha / year]', min_value=1., max_value=30., value=5., step=0.5, key = "conif_seq_ha_yr", help = help["advanced_options"][7])
+            elasticity = st.slider("Production / Imports elasticity ratio", min_value=0., max_value=1., value=1., step=0.1, key="elasticity", help = help["advanced_options"][9])
+            agroecology_tree_coverage = st.slider("Tree coverage in agroecology", min_value=0., max_value=1., value=0.1, step=0.1, key="tree_coverage")
+            
+            # tillage_prod_factor = st.slider("Soil tillage production reduction", min_value=0., max_value=1., value=0.3, step=0.1, key="tillage_prod")
+            # tillage_ghg_factor = st.slider("Soil tillage GHG reduction", min_value=0., max_value=1., value=0.3, step=0.1, key="tillage_ghg")
 
+            manure_prod_factor = st.slider("Manure production reduction", min_value=0., max_value=1., value=0.3, step=0.1, key="manure_prod")
+            manure_ghg_factor = st.slider("Manure GHG reduction", min_value=0., max_value=1., value=0.3, step=0.1, key="manure_ghg")
+
+            breeding_prod_factor = st.slider("Breeding production reduction", min_value=0., max_value=1., value=0.3, step=0.1, key="breeding_prod")
+            breeding_ghg_factor = st.slider("Breeding GHG reduction", min_value=0., max_value=1., value=0.3, step=0.1, key="breeding_ghg")
+
+            methane_prod_factor = st.slider("Methane inhibitors production reduction", min_value=0., max_value=1., value=0.3, step=0.1, key="methane_prod")
+            methane_ghg_factor = st.slider("Methane inhibitors GHG reduction", min_value=0., max_value=1., value=0.3, step=0.1, key="methane_ghg")
+
+            # soil_management_ghg_factor = st.slider("Soil and carbon management GHG reduction", min_value=0., max_value=.2, value=0.05, step=0.01, key="soil_management_ghg")
+
+            fossil_livestock_ghg_factor = st.slider("Livestock fossil fuel GHG reduction", min_value=0., max_value=.2, value=0.05, step=0.01, key="fossil_livestock_ghg")
+            fossil_arable_ghg_factor = st.slider("Arable fossil fuel GHG reduction", min_value=0., max_value=.2, value=0.05, step=0.01, key="fossil_arable_ghg")
+
+            fossil_livestock_prod_factor = st.slider("Livestock fossil fuel production reduction", min_value=0., max_value=1., value=0.05, step=0.01, key="fossil_livestock_prod")
+            fossil_arable_prod_factor = st.slider("Arable fossil fuel production reduction", min_value=0., max_value=1., value=0.05, step=0.01, key="fossil_arable_prod")
+            
             scaling_nutrient = st.radio("Which nutrient to keep constant when scaling food consumption",
                                         ('g/cap/day', 'g_prot/cap/day', 'g_fat/cap/day', 'kCal/cap/day'),
                                         horizontal=True,
@@ -208,22 +231,57 @@ with st.sidebar:
                                         key='nutrient_constant')
             
             st.button("Reset", on_click=update_slider,
-                    kwargs={"values": [25.0, 2250, 20, 30, 30, 50., 12.5, 23.5, 0.1, "kCal/cap/day"],
-                            "keys": ['labmeat_slider', 'rda_slider',
-                                     'timescale_slider', 'max_ghg_animal',
-                                     'max_ghg_plant', 'bdleaf_conif_ratio',
-                                     'bdleaf_seq_ha_yr', 'conif_seq_ha_yr',
-                                     'tree_coverage', 'nutrient_constant']},
+                    kwargs={"values": [25, 2250, 20, 30, 30, 50, 12.5, 23.5, 0.1, "kCal/cap/day"],
+                            "keys": ['labmeat_slider',
+                                     'rda_slider',
+                                     'timescale_slider',
+                                     'max_ghg_animal',
+                                     'max_ghg_plant',
+                                     'bdleaf_conif_ratio',
+                                     'bdleaf_seq_ha_yr',
+                                     'conif_seq_ha_yr',
+                                     'tree_coverage',
+                                     'nutrient_constant']},
                     key='reset_a')
 
         else:
             if password != "":
                 st.error("Incorrect password")
 
-            for label, params in advs.items():
-                advs[label]['value'] = params["value"]
+            labmeat_co2e = value=25
+            rda_kcal = 2250
+            n_scale = 20
+            max_ghge_animal = 30
+            max_ghge_plant = 30
+            bdleaf_conif_ratio = 50
 
-            scaling_nutrient = 'kCal/cap/day'            
+            bdleaf_seq_ha_yr = 5.
+            conif_seq_ha_yr = 5.
+
+            elasticity = 1
+            agroecology_tree_coverage = 0.1
+
+            # tillage_prod_factor = 0.3
+            # tillage_ghg_factor = 0.3
+
+            manure_prod_factor = 0.3
+            manure_ghg_factor = 0.3
+
+            breeding_prod_factor = 0.3
+            breeding_ghg_factor = 0.3
+
+            methane_prod_factor = 0.3
+            methane_ghg_factor = 0.3
+
+            # soil_management_ghg_factor = 0.05
+
+            fossil_livestock_ghg_factor = 0.05
+            fossil_livestock_prod_factor = 0.05
+
+            fossil_arable_ghg_factor = 0.05
+            fossil_arable_prod_factor = 0.05
+            
+            scaling_nutrient = 'kCal/cap/day'               
 
     st.caption('''--- Developed with funding from [FixOurFood](https://fixourfood.org/).''')
     
@@ -244,7 +302,7 @@ with col1:
     food_system = Pipeline(datablock)
 
     # Global parameters
-    food_system.datablock_write(["global_parameters", "timescale"], advs["n_scale"]["value"])
+    food_system.datablock_write(["global_parameters", "timescale"], n_scale)
 
     # Consumer demand
     food_system.add_step(project_future,
@@ -254,45 +312,45 @@ with col1:
                          {"scale":1-ruminant/100,
                           "items":[2731, 2732],
                           "source":["production", "imports"],
-                          "elasticity":[advs["elasticity"]["value"], 1-advs["elasticity"]["value"]],
+                          "elasticity":[elasticity, 1-elasticity],
                           "scaling_nutrient":scaling_nutrient})
     
     food_system.add_step(item_scaling,
                          {"scale":1-pig_poultry_eggs/100,
                           "items":[2733, 2734, 2949],
                           "source":["production", "imports"],
-                          "elasticity":[advs["elasticity"]["value"], 1-advs["elasticity"]["value"]],
+                          "elasticity":[elasticity, 1-elasticity],
                           "scaling_nutrient":scaling_nutrient})
     
     food_system.add_step(item_scaling,
                          {"scale":1-dairy/100,
                           "items":[2740, 2743, 2948],
                           "source":["production", "imports"],
-                          "elasticity":[advs["elasticity"]["value"], 1-advs["elasticity"]["value"]],
+                          "elasticity":[elasticity, 1-elasticity],
                           "scaling_nutrient":scaling_nutrient})
     
     food_system.add_step(item_scaling,
                          {"scale":1+fruit_veg/100,
                           "item_group":["Vegetables", "Fruits - Excluding Wine"],
                           "source":["production", "imports"],
-                          "elasticity":[advs["elasticity"]["value"], 1-advs["elasticity"]["value"]],
+                          "elasticity":[elasticity, 1-elasticity],
                           "scaling_nutrient":scaling_nutrient})
     
     food_system.add_step(item_scaling,
                          {"scale":1+cereals/100,
                           "item_group":["Cereals - Excluding Beer"],
                           "source":["production", "imports"],
-                          "elasticity":[advs["elasticity"]["value"], 1-advs["elasticity"]["value"]],
+                          "elasticity":[elasticity, 1-elasticity],
                           "scaling_nutrient":scaling_nutrient})
     
     food_system.add_step(food_waste_model,
                          {"waste_scale":waste,
-                          "kcal_rda":advs["rda_kcal"]["value"],
+                          "kcal_rda":rda_kcal,
                           "source":"imports"})
 
     food_system.add_step(cultured_meat_model,
                          {"cultured_scale":labmeat/100,
-                          "labmeat_co2e":advs["labmeat_co2e"]["value"],
+                          "labmeat_co2e":labmeat_co2e,
                           "source":"production"})
     
     # Land management
@@ -308,7 +366,7 @@ with col1:
     
     food_system.add_step(foresting_spared_model,
                          {"forest_fraction":foresting_spared/100,
-                          "bdleaf_conif_ratio":advs["bdleaf_conif_ratio"]["value"]/100})
+                          "bdleaf_conif_ratio":bdleaf_conif_ratio/100})
     
     food_system.add_step(BECCS_farm_land,
                          {"farm_percentage":land_BECCS/100})
@@ -318,33 +376,33 @@ with col1:
                          {"land_percentage":silvopasture/100.,
                           "agroecology_class":"Silvopasture",
                           "land_type":["Improved grassland", "Semi-natural grassland"],
-                          "tree_coverage":advs["agroecology_tree_coverage"]["value"],
+                          "tree_coverage":agroecology_tree_coverage,
                           "replaced_items":[2731, 2732],
                           "new_items":2617,
                           "item_yield":1e2})
     
     food_system.add_step(scale_impact,
                          {"items":[2731, 2732],
-                          "scale_factor":1 - advs["methane_ghg_factor"]["value"]*methane_inhibitor/100})
+                          "scale_factor":1 - methane_ghg_factor*methane_inhibitor/100})
     
     food_system.add_step(scale_production,
-                         {"scale_factor":1-advs["methane_prod_factor"]["value"]*methane_inhibitor/100,
+                         {"scale_factor":1-methane_prod_factor*methane_inhibitor/100,
                           "items":[2731, 2732]})
     
     food_system.add_step(scale_impact,
                          {"items":[2731, 2732],
-                          "scale_factor":1 - advs["manure_ghg_factor"]["value"]*manure_management/100})
+                          "scale_factor":1 - manure_ghg_factor*manure_management/100})
     
     food_system.add_step(scale_production,
-                         {"scale_factor":1-advs["manure_prod_factor"]["value"]*manure_management/100,
+                         {"scale_factor":1-manure_prod_factor*manure_management/100,
                           "items":[2731, 2732]})
     
     food_system.add_step(scale_impact,
                          {"items":[2731, 2732],
-                          "scale_factor":1 - advs["breeding_ghg_factor"]["value"]*animal_breeding/100})
+                          "scale_factor":1 - breeding_ghg_factor*animal_breeding/100})
     
     food_system.add_step(scale_production,
-                         {"scale_factor":1-advs["breeding_prod_factor"]["value"]*animal_breeding/100,
+                         {"scale_factor":1-breeding_prod_factor*animal_breeding/100,
                           "items":[2731, 2732]})
 
     # Arable farming practices
@@ -352,17 +410,17 @@ with col1:
                          {"land_percentage":agroforestry/100.,
                           "agroecology_class":"Agroforestry",
                           "land_type":["Arable"],
-                          "tree_coverage":advs["agroecology_tree_coverage"]["value"],
+                          "tree_coverage":agroecology_tree_coverage,
                           "replaced_items":2511,
                           "new_items":2617,
                           "item_yield":1e2})
     
     food_system.add_step(scale_impact,
                          {"item_origin":"Vegetal Products",
-                          "scale_factor":1 - advs["fossil_arable_ghg_factor"]["value"]*fossil_arable/100})
+                          "scale_factor":1 - fossil_arable_ghg_factor*fossil_arable/100})
     
     food_system.add_step(scale_production,
-                         {"scale_factor":1 - advs["fossil_arable_prod_factor"]["value"]*fossil_arable/100,
+                         {"scale_factor":1 - fossil_arable_prod_factor*fossil_arable/100,
                           "item_origin":"Vegetal Products"})
     
     # Technology & Innovation    
@@ -374,8 +432,8 @@ with col1:
     
     # Compute emissions and sequestration
     food_system.add_step(forest_sequestration_model,
-                         {"seq_broadleaf_ha_yr":advs["bdleaf_seq_ha_yr"]["value"],
-                          "seq_coniferous_ha_yr":advs["conif_seq_ha_yr"]["value"]})
+                         {"seq_broadleaf_ha_yr":bdleaf_seq_ha_yr,
+                          "seq_coniferous_ha_yr":conif_seq_ha_yr})
 
     food_system.add_step(compute_emissions)
 

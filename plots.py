@@ -68,6 +68,12 @@ def plots(datablock):
             user_id = st.text_input("Enter your unique ID", "AFP")
             submit_state = st.button("Submit pathway")
 
+            if submit_state:
+                total_emissions = datablock["impact"]["g_co2e/year"]["production"].sel(Year=metric_yr).sum().values/1e12
+                total_sequestration = datablock["impact"]["co2e_sequestration"].sel(Year=metric_yr).sum().values/1e6
+                SSR = datablock["food"]["g/cap/day"].fbs.SSR().sel(Year=metric_yr).to_numpy()
+                submit_scenario(user_id, SSR, total_emissions-total_sequestration, ambition_levels=True)
+
         with col_comp_1:
 
             with st.container(height=750, border=True):
@@ -85,10 +91,27 @@ def plots(datablock):
                 emissions = emissions.fbs.group_sum(coordinate="Item_origin", new_name="Item")
                 seq_da = datablock["impact"]["co2e_sequestration"].sel(Year=metric_yr)
 
-                c = plot_single_bar_altair(xr.concat([emissions/1e6, -seq_da/1e6], dim="Item"), show="Item",
-                                                axis_title="Sequestration / Production emissions [M tCO2e]",
-                                                ax_min=-3e2, ax_max=3e2, unit="M tCO2e", vertical=True,
+                sectoral_emissions = xr.DataArray(data = list(sector_emissions_dict.values()),
+                                          name="Sectoral emissions",
+                                          coords={"Sector": list(sector_emissions_dict.keys())})
+                
+                # Fill values for Agriculture, Land use sinks, and removals
+                emissions_ds = datablock["impact"]["g_co2e/year"].sel(Year=metric_yr)
+                total_emissions = emissions_ds["production"].sum(dim="Item").values/1e12
+                seq_da = datablock["impact"]["co2e_sequestration"].sel(Year=metric_yr)
+                total_seq = seq_da.sum(dim="Item").values/1e6
+
+                sectoral_emissions.loc[{"Sector": "Agriculture"}] = total_emissions
+                sectoral_emissions.loc[{"Sector": "Land use sinks"}] = -total_seq
+
+                c = plot_single_bar_altair(sectoral_emissions, show="Sector",
+                                                axis_title="Mt CO2e / year", unit="Mt CO2e / year", vertical=True,
                                                 mark_total=True, show_zero=True, ax_ticks=True)
+
+                # c = plot_single_bar_altair(xr.concat([emissions/1e6, -seq_da/1e6], dim="Item"), show="Item",
+                #                                 axis_title="Sequestration / Production emissions [M tCO2e]",
+                #                                 ax_min=-3e2, ax_max=3e2, unit="M tCO2e", vertical=True,
+                #                                 mark_total=True, show_zero=True, ax_ticks=True)
                 
                 c = c.properties(height=500)
                 
@@ -304,7 +327,7 @@ def plots(datablock):
         per_cap_options = {"g/cap/day": 8000,
                    "g_prot/cap/day": 500,
                    "g_fat/cap/day": 550,
-                   "g_co2e/cap/day": 18000,
+                   "g_co2e/cap/day": 3500,
                    "kCal/cap/day": 14000}
 
         option_key = st.selectbox("Plot options", list(per_cap_options.keys()))
@@ -380,8 +403,4 @@ def plots(datablock):
             from bottom import bottom_panel
             bottom_panel(datablock, metric_yr)
 
-    if submit_state:
-        total_emissions = datablock["impact"]["g_co2e/year"]["production"].sel(Year=metric_yr).sum().values/1e12
-        total_sequestration = datablock["impact"]["co2e_sequestration"].sel(Year=metric_yr).sum().values/1e6
-        SSR = datablock["food"]["g/cap/day"].fbs.SSR().sel(Year=metric_yr).to_numpy()
-        submit_scenario(user_id, SSR, total_emissions-total_sequestration, ambition_levels=True)
+ 
